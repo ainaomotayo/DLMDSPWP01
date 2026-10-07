@@ -165,6 +165,25 @@ class TrainingDatasetProcessor(BaseDatasetProcessor):
 
         return chosen_functions
 
+    def get_regression_summary_table(self, chosen_functions):
+        '''
+        Compiles a structured summary table of the selected regression models.
+        Useful for reporting and tabulating results.
+
+        chosen_functions: dictionary returned by select_best_ideal_functions.
+        return: list of dictionaries representing the regression summary table.
+        '''
+        summary = []
+        for t_col, info in chosen_functions.items():
+            summary.append({
+                "training_function": t_col,
+                "ideal_function": str(info["chosen_ideal_col"]).upper(),
+                "sum_squared_error": float(info["sum_squared_deviation"]),
+                "max_deviation": float(info["max_deviation"]),
+                "threshold": float(info["threshold"])
+            })
+        return summary
+
 
 class IdealDatasetProcessor(BaseDatasetProcessor):
     '''

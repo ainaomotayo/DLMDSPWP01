@@ -191,6 +191,20 @@ class TestFunctionMatchingLogic(unittest.TestCase):
             self.assertGreater(info["max_deviation"], 0.0)
             self.assertAlmostEqual(info["threshold"], info["max_deviation"] * math.sqrt(2))
 
+    def test_get_regression_summary_table(self):
+        '''
+        Verifies that get_regression_summary_table compiles structured model summary.
+        '''
+        train_p = TrainingDatasetProcessor()
+        ideal_p = IdealDatasetProcessor()
+        train_p.load_data()
+        ideal_p.load_data()
+        chosen = train_p.select_best_ideal_functions(ideal_p)
+        summary = train_p.get_regression_summary_table(chosen)
+        self.assertEqual(len(summary), 4)
+        self.assertEqual(summary[0]["training_function"], "y1")
+        self.assertEqual(summary[0]["ideal_function"], "Y13")
+
 
 class TestTestDataMapping(unittest.TestCase):
     '''
