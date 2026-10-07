@@ -74,9 +74,10 @@ def main():
         print("-" * 70)
         print(f"{'Training Func':<15}{'Chosen Ideal':<15}{'Sum Squared Dev':<20}{'Max Dev':<12}{'Threshold (sqrt(2))':<15}")
         print("-" * 70)
-        for t_col, info in chosen_functions.items():
-            print(f"{t_col:<15}{info['chosen_ideal_col']:<15}{info['sum_squared_deviation']:<20.4f}"
-                  f"{info['max_deviation']:<12.4f}{info['threshold']:<15.4f}")
+        summary_table = train_processor.get_regression_summary_table(chosen_functions)
+        for row in summary_table:
+            print(f"{row['training_function']:<15}{row['ideal_function']:<15}{row['sum_squared_error']:<20.4f}"
+                  f"{row['max_deviation']:<12.4f}{row['threshold']:<15.4f}")
         print("-" * 70)
     except AssignmentBaseException as err:
         print(f"Function matching error: {err.message}", file=sys.stderr)
