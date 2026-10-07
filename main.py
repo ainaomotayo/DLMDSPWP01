@@ -98,14 +98,20 @@ def main():
         print(f"Test mapping error: {err.message}", file=sys.stderr)
         return 1
 
-    # 5. Visualizations via Bokeh
+    # 5. Visualizations via Bokeh and Static Figures for Report
     try:
-        print("[5/5] Generating Bokeh interactive visualization...")
+        print("[5/5] Generating interactive visualization and report figures...")
         visualizer = DataVisualizer("outputs/visualization.html")
         output_file_path = visualizer.generate_visualization(
             train_df, ideal_df, chosen_functions, all_summary
         )
-        print(f"      Visualization saved successfully: {output_file_path}")
+        print(f"      Interactive Bokeh visualization saved: {output_file_path}")
+
+        fig_dict = visualizer.export_png(
+            train_df, ideal_df, chosen_functions, all_summary,
+            output_dir="outputs/figures"
+        )
+        print(f"      Static report figures exported: {len(fig_dict['individual'])} figures in outputs/figures/")
     except Exception as err:
         print(f"Visualization error: {str(err)}", file=sys.stderr)
         return 1

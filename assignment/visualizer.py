@@ -224,3 +224,200 @@ class DataVisualizer(object):
         layout = column(*plots)
         save(layout)
         return self.output_filepath
+
+    def export_png(self, train_df, ideal_df, chosen_models, all_test_summary,
+                   output_dir="outputs/figures", combined_filename="visualization_combined.png"):
+        '''
+        Exports high-resolution static PNG figures using Matplotlib (Unit 3.4.1).
+        Generates individual chart files for insertion into academic report documents,
+        as well as a combined multi-panel dashboard.
+
+        train_df: training DataFrame.
+        ideal_df: ideal functions DataFrame.
+        chosen_models: dictionary of chosen ideal regression models.
+        all_test_summary: list of test classification records.
+        output_dir: directory path to store figure PNG files.
+        combined_filename: filename for the stacked composite figure.
+        return: dictionary containing filepaths for individual and combined figures.
+        '''
+        import matplotlib.pyplot as plt
+
+        resolved_dir = resolve_output_path(output_dir)
+        os.makedirs(resolved_dir, exist_ok=True)
+
+        function_keys = [("y1", "Function 1"), ("y2", "Function 2"),
+                         ("y3", "Function 3"), ("y4", "Function 4")]
+
+        palette = {
+            "y1": {"train": "#1f77b4", "ideal": "#ff7f0e", "mapped": "#2ca02c"},
+            "y2": {"train": "#9467bd", "ideal": "#8c564b", "mapped": "#d62728"},
+            "y3": {"train": "#e377c2", "ideal": "#7f7f7f", "mapped": "#bcbd22"},
+            "y4": {"train": "#17becf", "ideal": "#aec7e8", "mapped": "#ff9896"}
+        }
+
+        generated_files = {"individual": [], "combined": None}
+
+        # 1. Generate individual figures (one per function for report embedding)
+        for idx, (t_col, label) in enumerate(function_keys):
+            info = chosen_models[t_col]
+            i_col = info["chosen_ideal_col"]
+            thresh = info["threshold"]
+
+            fig, ax = plt.subplots(figsize=(9, 5))
+
+            # Ideal curve
+            ax.plot(
+                ideal_df["x"],
+                ideal_df[i_col],
+                color=palette[t_col]["ideal"],
+                linewidth=2.0,
+                label=f"Chosen Ideal {i_col.upper()}"
+            )
+
+            # Tolerance band
+            ax.fill_between(
+                ideal_df["x"],
+                ideal_df[i_col] - thresh,
+                ideal_df[i_col] + thresh,
+                color=palette[t_col]["ideal"],
+                alpha=0.2,
+                label=f"Tolerance Band (+/- {thresh:.4f})"
+            )
+
+            # Training data points
+            ax.scatter(
+                train_df["x"],
+                train_df[t_col],
+                color=palette[t_col]["train"],
+                s=14,
+                alpha=0.6,
+                label=f"Training {t_col}"
+            )
+
+            # Assigned test data points
+            mapped_pts = [
+                pt for pt in all_test_summary
+                if pt["mapped"] and pt["ideal_func"].upper() == i_col.upper()
+            ]
+
+            if mapped_pts:
+                ax.scatter(
+                    [pt["x"] for pt in mapped_pts],
+                    [pt["y"] for pt in mapped_pts],
+                    color=palette[t_col]["mapped"],
+                    marker="D",
+                    s=45,
+                    edgecolors="black",
+                    linewidth=0.8,
+                    label=f"Assigned Test ({len(mapped_pts)} pts)"
+                )
+
+            title = (f"Figure {idx + 1}: Training {t_col} vs Ideal {i_col.upper()} "
+                     f"(Max Dev: {info['max_deviation']:.4f}, Threshold: {thresh:.4f})")
+            ax.set_title(title, fontsize=11, fontweight="bold")
+            ax.set_xlabel("x", fontsize=10)
+            ax.set_ylabel("y", fontsize=10)
+            ax.grid(True, linestyle=":", alpha=0.6)
+            ax.legend(loc="upper left", fontsize=8)
+
+            single_path = os.path.join(resolved_dir, f"figure_{idx + 1}_training_{t_col}_vs_ideal_{i_col}.png")
+            plt.tight_layout()
+            plt.savefig(single_path, dpi=300, bbox_inches="tight")
+            plt.close(fig)
+            generated_files["individual"].append(single_path)
+
+        # Overview figure for test point classification
+        fig_summary, ax_summary = plt.subplots(figsize=(9, 5))
+        mapped_all = [pt for pt in all_test_summary if pt["mapped"]]
+        unmapped_all = [pt for pt in all_test_summary if not pt["mapped"]]
+
+        if mapped_all:
+            ax_summary.scatter(
+                [pt["x"] for pt in mapped_all],
+                [pt["y"] for pt in mapped_all],
+                color="#2ca02c",
+                marker="o",
+                s=40,
+                alpha=0.85,
+                edgecolors="black",
+                linewidth=0.5,
+                label=f"Mapped Test Cases ({len(mapped_all)} pts)"
+            )
+
+        if unmapped_all:
+            ax_summary.scatter(
+                [pt["x"] for pt in unmapped_all],
+                [pt["y"] for pt in unmapped_all],
+                color="#7f7f7f",
+                marker="x",
+                s=35,
+                alpha=0.6,
+                label=f"Unmapped Test Cases ({len(unmapped_all)} pts)"
+            )
+
+        ax_summary.set_title("Figure 5: Test Dataset Classification (Mapped vs Unmapped)",
+                             fontsize=11, fontweight="bold")
+        ax_summary.set_xlabel("x", fontsize=10)
+        ax_summary.set_ylabel("y", fontsize=10)
+        ax_summary.grid(True, linestyle=":", alpha=0.6)
+        ax_summary.legend(loc="upper left", fontsize=8)
+
+        overview_path = os.path.join(resolved_dir, "figure_5_test_data_classification_overview.png")
+        plt.tight_layout()
+        plt.savefig(overview_path, dpi=300, bbox_inches="tight")
+        plt.close(fig_summary)
+        generated_files["individual"].append(overview_path)
+
+        # 2. Combined multi-panel figure
+        fig_combined, axes = plt.subplots(nrows=5, ncols=1, figsize=(12, 22))
+        for idx, (t_col, label) in enumerate(function_keys):
+            ax = axes[idx]
+            info = chosen_models[t_col]
+            i_col = info["chosen_ideal_col"]
+            thresh = info["threshold"]
+
+            ax.plot(ideal_df["x"], ideal_df[i_col], color=palette[t_col]["ideal"],
+                    linewidth=2.0, label=f"Chosen Ideal {i_col.upper()}")
+            ax.fill_between(ideal_df["x"], ideal_df[i_col] - thresh, ideal_df[i_col] + thresh,
+                            color=palette[t_col]["ideal"], alpha=0.2, label=f"Tolerance Band (+/- {thresh:.4f})")
+            ax.scatter(train_df["x"], train_df[t_col], color=palette[t_col]["train"],
+                       s=12, alpha=0.6, label=f"Training {t_col}")
+
+            mapped_pts = [pt for pt in all_test_summary if pt["mapped"] and pt["ideal_func"].upper() == i_col.upper()]
+            if mapped_pts:
+                ax.scatter([pt["x"] for pt in mapped_pts], [pt["y"] for pt in mapped_pts],
+                           color=palette[t_col]["mapped"], marker="D", s=40, edgecolors="black",
+                           linewidth=0.8, label=f"Assigned Test ({len(mapped_pts)} pts)")
+
+            title = (f"{label}: Training {t_col} vs Ideal {i_col.upper()} "
+                     f"(Max Dev: {info['max_deviation']:.4f}, Threshold: {thresh:.4f})")
+            ax.set_title(title, fontsize=11, fontweight="bold")
+            ax.set_xlabel("x", fontsize=10)
+            ax.set_ylabel("y", fontsize=10)
+            ax.grid(True, linestyle=":", alpha=0.6)
+            ax.legend(loc="upper left", fontsize=8)
+
+        ax_comb_sum = axes[4]
+        if mapped_all:
+            ax_comb_sum.scatter([pt["x"] for pt in mapped_all], [pt["y"] for pt in mapped_all],
+                                color="#2ca02c", marker="o", s=35, alpha=0.85, edgecolors="black",
+                                linewidth=0.5, label=f"Mapped Test Cases ({len(mapped_all)} pts)")
+        if unmapped_all:
+            ax_comb_sum.scatter([pt["x"] for pt in unmapped_all], [pt["y"] for pt in unmapped_all],
+                                color="#7f7f7f", marker="x", s=30, alpha=0.6,
+                                label=f"Unmapped Test Cases ({len(unmapped_all)} pts)")
+
+        ax_comb_sum.set_title("Overview: Test Dataset Classification (Mapped vs Unmapped)",
+                              fontsize=11, fontweight="bold")
+        ax_comb_sum.set_xlabel("x", fontsize=10)
+        ax_comb_sum.set_ylabel("y", fontsize=10)
+        ax_comb_sum.grid(True, linestyle=":", alpha=0.6)
+        ax_comb_sum.legend(loc="upper left", fontsize=8)
+
+        comb_path = os.path.join(resolved_dir, combined_filename)
+        plt.tight_layout()
+        plt.savefig(comb_path, dpi=300, bbox_inches="tight")
+        plt.close(fig_combined)
+        generated_files["combined"] = comb_path
+
+        return generated_files
