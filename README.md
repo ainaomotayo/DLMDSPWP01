@@ -23,11 +23,11 @@ $$\text{SSE}_{k, j} = \sum_{i=1}^{N} (y_{\text{train}, k}^{(i)} - y_{\text{ideal
 
 The maximum absolute difference between each training function and its chosen ideal function is determined:
 
-$$\text{max\_dev}_k = \max_{i=1}^{N} |y_{\text{train}, k}^{(i)} - y_{\text{ideal}, j^*}^{(i)}|$$
+$$\text{MaxDev}_k = \max_{i=1}^{N} |y_{\text{train}, k}^{(i)} - y_{\text{ideal}, j^*}^{(i)}|$$
 
 The mapping threshold is defined by scaling the maximum deviation:
 
-$$\text{Threshold}_k = \text{max\_dev}_k \times \sqrt{2}$$
+$$\text{Threshold}_k = \text{MaxDev}_k \times \sqrt{2}$$
 
 ### Model Matching Results
 
