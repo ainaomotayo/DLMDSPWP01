@@ -23,11 +23,11 @@ $$\text{SSE}_{k, j} = \sum_{i=1}^{N} (y_{\text{train}, k}^{(i)} - y_{\text{ideal
 
 The maximum absolute difference between each training function and its chosen ideal function is determined:
 
-$$\text{max\_dev}_k = \max_{i=1}^{N} |y_{\text{train}, k}^{(i)} - y_{\text{ideal}, j^*}^{(i)}|$$
+$$\text{MaxDev}_k = \max_{i=1}^{N} |y_{\text{train}, k}^{(i)} - y_{\text{ideal}, j^*}^{(i)}|$$
 
 The mapping threshold is defined by scaling the maximum deviation:
 
-$$\text{Threshold}_k = \text{max\_dev}_k \times \sqrt{2}$$
+$$\text{Threshold}_k = \text{MaxDev}_k \times \sqrt{2}$$
 
 ### Model Matching Results
 
@@ -68,12 +68,12 @@ The application adheres to clean object-oriented design and Python best practice
   - Table 2 (ideal_functions): X, Y1 (ideal func) through Y50 (ideal func).
   - Table 3 (test_data_mapping): id, X (test func), Y (test func), Delta Y (test func), No. of ideal func.
 - Data Visualization via Bokeh (Unit 3.4.3): DataVisualizer builds interactive figures with Bokeh Band tolerance zones and HoverTool coordinate inspection, written to outputs/visualization.html.
-- Automated Testing (Unit 5.3): test_assignment.py provides 13 automated tests deriving from unittest.TestCase.
+- Automated Testing (Unit 5.3): test_assignment.py provides 21 automated tests deriving from unittest.TestCase.
 
 ## 4. Project Directory Structure
 
 ```text
-python-assignment/
+DLMDSPWP01/
 │
 ├── assignment/                             # Core Python package (Unit 1.5)
 │   ├── __init__.py                         # Package exports
@@ -82,21 +82,22 @@ python-assignment/
 │   ├── database.py                         # SQLAlchemy database manager (Unit 3.5)
 │   └── visualizer.py                       # Bokeh visualization engine (Unit 3.4.3)
 │
+├── notebooks/                              # Jupyter analysis notebook (Unit 5.1)
+│   └── prototype_analysis.ipynb            # End-to-end prototyping workflow
+│
+├── tests/                                  # Unit testing suite (Unit 5.3)
+│   ├── __init__.py                         # Test package marker
+│   └── test_assignment.py                  # Automated unittest cases
+│
 ├── data/                                   # Input datasets (Local / Untracked)
 │   ├── train.csv                           # Training functions
 │   ├── ideal.csv                           # 50 ideal functions
 │   └── test.csv                            # Test points
 │
-├── notebooks/                              # Jupyter analysis notebook (Unit 5.1)
-│   └── prototype_analysis.ipynb            # End-to-end prototyping workflow
-│
 ├── outputs/                                # Generated artifacts (Local / Untracked)
 │   ├── assignment.db                       # Compiled SQLite database
-│   └── visualization.html                  # Interactive Bokeh dashboard
-│
-├── tests/                                  # Unit testing suite (Unit 5.3)
-│   ├── __init__.py                         # Test package marker
-│   └── test_assignment.py                  # Automated unittest cases
+│   ├── visualization.html                  # Interactive Bokeh dashboard
+│   └── figures/                            # High-resolution publication PNGs
 │
 ├── main.py                                 # Client entry point
 ├── requirements.txt                        # Pinned dependencies (Unit 5.2)

@@ -399,6 +399,26 @@ class TestVisualizer(unittest.TestCase):
         self.assertTrue(os.path.exists(result_path))
         self.assertGreater(os.path.getsize(result_path), 1000)
 
+    def test_export_png_creates_figures(self):
+        '''
+        Verifies that DataVisualizer exports static PNG figures for the report.
+        '''
+        from assignment import DataVisualizer
+        visualizer = DataVisualizer()
+        output_dir = "outputs/test_figures"
+        files = visualizer.export_png(
+            self.train_df, self.ideal_df, self.chosen_models, self.all_summary,
+            output_dir=output_dir, combined_filename="test_combined.png"
+        )
+        self.assertEqual(len(files["individual"]), 5)
+        self.assertTrue(os.path.exists(files["combined"]))
+        for fpath in files["individual"]:
+            self.assertTrue(os.path.exists(fpath))
+            os.remove(fpath)
+        os.remove(files["combined"])
+        if os.path.exists(output_dir):
+            os.rmdir(output_dir)
+
 
 class TestValidationEdgeCases(unittest.TestCase):
     '''
