@@ -13,9 +13,15 @@ Follows Unit 5.3 of the course book.
 
 import math
 import os
+import sys
 import unittest
 import pandas as pd
 import sqlalchemy as db
+
+# Ensure project root is in sys.path when executing test script directly
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from assignment import (
     AssignmentBaseException,
